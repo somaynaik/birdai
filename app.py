@@ -213,13 +213,11 @@ def normalize_audio_for_birdnet(source_path, working_dir):
 
 @app.route('/')
 def index():
-    ensure_models_loading()
     return render_template('index.html')
 
 
 @app.route('/status')
 def status():
-    ensure_models_loading()
     return jsonify({
         'loaded': models['loaded'],
         'loading': models['loading'],

@@ -81,18 +81,18 @@ function checkStatus() {
         .then((response) => response.json())
         .then((data) => {
             modelsLoaded = data.loaded;
+            imageLabel.style.opacity = '1';
+            audioLabel.style.opacity = '1';
+
             if (modelsLoaded) {
                 setStatus('success', 'Image model loaded. Audio uses BirdNET on demand.');
-                imageLabel.style.opacity = '1';
-                audioLabel.style.opacity = '1';
             } else if (data.error) {
                 setStatus('error', `Model loading failed: ${data.error}`);
             } else if (data.loading) {
-                setStatus('loading', 'Loading models...');
+                setStatus('loading', 'Loading image model. Audio is ready.');
                 setTimeout(checkStatus, 2000);
             } else {
-                setStatus('loading', 'Starting model loading...');
-                setTimeout(checkStatus, 2000);
+                setStatus('success', 'Ready. Audio works now. Image model loads on first photo upload.');
             }
         })
         .catch(() => {
@@ -159,11 +159,6 @@ audioInput.addEventListener('change', () => {
 });
 
 function classifyImage(file) {
-    if (!modelsLoaded) {
-        setStatus('error', 'Models are not loaded yet.');
-        return;
-    }
-
     setStatus('loading', 'Processing image...');
     result.classList.add('hidden');
 
@@ -181,14 +176,22 @@ function classifyImage(file) {
         method: 'POST',
         body: formData
     })
-        .then((response) => response.json())
-        .then((data) => {
-            if (data.error) {
-                setStatus('error', data.error);
+        .then(async (response) => ({
+            status: response.status,
+            data: await response.json()
+        }))
+        .then((response) => {
+            if (response.data.error && response.data.error.includes('still loading')) {
+                setStatus('loading', 'Starting image model. The first photo may take a minute...');
+                setTimeout(checkStatus, 2000);
+                setTimeout(() => classifyImage(file), 5000);
+            } else if (response.data.error) {
+                setStatus('error', response.data.error);
             } else {
+                modelsLoaded = true;
                 setStatus('success', 'Image classification complete.');
                 resultText.innerHTML = renderResultCard(
-                    data.species,
+                    response.data.species,
                     ['Image scan complete', 'Top visual match']
                 );
                 result.classList.remove('hidden');
