@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: birdscanner-api
+    runtime: python
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --timeout 300
+    envVars:
+      - key: ALLOWED_ORIGINS
+        value: https://avian-map.vercel.app
+      - key: MAX_CONTENT_LENGTH_MB
+        value: "50"

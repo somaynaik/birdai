@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bird Identification Scanner</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <main class="shell">
+        <section class="panel">
+            <header class="hero">
+                <p class="eyebrow">Bird Scanner</p>
+                <h1>Bird Identification Scanner</h1>
+                <p class="hero-copy">Upload a bird photo or call recording and get a quick species read from the current scanner.</p>
+            </header>
+
+            <div class="status-row">
+                <div id="status" class="status loading">Loading models...</div>
+            </div>
+
+            <section class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Upload bird image or audio">
+                <input type="file" id="mixedInput" accept="image/*,audio/*" hidden>
+                <div class="dropzone-icon">+</div>
+                <div class="dropzone-copy">
+                    <span>Drop bird photo or audio to begin scan, or</span>
+                    <button id="browseBtn" class="link-btn" type="button">browse</button>
+                </div>
+            </section>
+
+            <section class="workspace">
+                <div class="workspace-header">
+                    <h2>Scan Sources</h2>
+                    <p>Select the input that best matches the sighting.</p>
+                </div>
+
+                <div class="card-grid">
+                    <label class="source-card" id="imageLabel">
+                        <span class="card-icon image-card-icon"></span>
+                        <span class="card-menu">...</span>
+                        <strong>Bird Photo</strong>
+                        <span class="card-meta">JPEG, PNG or WEBP image</span>
+                        <input type="file" id="imageInput" accept="image/*" hidden>
+                    </label>
+
+                    <label class="source-card" id="audioLabel">
+                        <span class="card-icon audio-card-icon"></span>
+                        <span class="card-menu">...</span>
+                        <strong>Bird Call Audio</strong>
+                        <span class="card-meta">MP3, WAV or FLAC upload</span>
+                        <input type="file" id="audioInput" accept="audio/*" hidden>
+                    </label>
+
+                    <button id="recordBtn" class="source-card action-card" type="button">
+                        <span class="card-icon mic-card-icon"></span>
+                        <span class="card-menu">...</span>
+                        <strong>Live Recording</strong>
+                        <span class="card-meta">Capture from microphone</span>
+                    </button>
+
+                    <button id="stopBtn" class="source-card action-card stop-card" type="button" disabled>
+                        <span class="card-icon stop-card-icon"></span>
+                        <span class="card-menu">...</span>
+                        <strong>Stop Capture</strong>
+                        <span class="card-meta">Finish and analyze audio</span>
+                    </button>
+                </div>
+            </section>
+
+            <section class="output-grid">
+                <div class="output-card preview-card">
+                    <div class="output-head">
+                        <h3>Preview</h3>
+                        <p>Current file or live capture</p>
+                    </div>
+                    <div id="preview" class="preview"></div>
+                </div>
+
+                <div id="result" class="output-card result hidden">
+                    <div class="output-head">
+                        <h3>Results</h3>
+                        <p>Latest classifier response</p>
+                    </div>
+                    <div id="resultText" class="result-body"></div>
+                    <button id="nextBtn" class="next-btn" type="button">Scan Another Bird</button>
+                </div>
+            </section>
+        </section>
+    </main>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
