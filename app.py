@@ -12,14 +12,6 @@ from PIL import Image
 from werkzeug.utils import secure_filename
 
 import imageio_ffmpeg
-import librosa
-import numpy as np
-import soundfile as sf
-import torch
-import torchaudio
-from transformers import AutoImageProcessor, AutoModelForImageClassification
-
-from birdnet_analyzer.analyze.core import analyze as birdnet_analyze
 
 app = Flask(__name__)
 default_origins = [
@@ -63,6 +55,8 @@ def load_models():
         models['error'] = None
 
     try:
+        from transformers import AutoImageProcessor, AutoModelForImageClassification
+
         models['image_processor'] = AutoImageProcessor.from_pretrained("chriamue/bird-species-classifier")
         models['image_model'] = AutoModelForImageClassification.from_pretrained("chriamue/bird-species-classifier")
         models['loaded'] = True
@@ -121,6 +115,8 @@ def parse_birdnet_results(csv_path, limit=5):
 
 
 def decode_with_librosa(source_path):
+    import librosa
+
     audio, sample_rate = librosa.load(source_path, sr=48000, mono=True)
     return audio, sample_rate
 
@@ -151,6 +147,9 @@ def decode_with_ffmpeg(source_path, working_dir):
 
 
 def decode_with_torchaudio(source_path):
+    import numpy as np
+    import torchaudio
+
     waveform, sample_rate = torchaudio.load(source_path)
     if waveform.ndim > 1 and waveform.shape[0] > 1:
         waveform = waveform.mean(dim=0, keepdim=True)
@@ -164,6 +163,10 @@ def decode_with_torchaudio(source_path):
 
 
 def decode_with_soundfile(source_path):
+    import librosa
+    import numpy as np
+    import soundfile as sf
+
     audio, sample_rate = sf.read(source_path, dtype="float32", always_2d=False)
 
     if isinstance(audio, np.ndarray) and audio.ndim > 1:
@@ -178,6 +181,8 @@ def decode_with_soundfile(source_path):
 
 def normalize_audio_for_birdnet(source_path, working_dir):
     """Decode uploaded audio with multiple backends and rewrite it as a WAV file for BirdNET."""
+    import soundfile as sf
+
     normalized_path = os.path.join(working_dir, "normalized.wav")
     errors = []
 
@@ -226,6 +231,8 @@ def status():
 def classify_image():
     filepath = None
     try:
+        import torch
+
         ensure_models_loading()
         if not models['loaded']:
             return model_loading_response()
@@ -266,6 +273,8 @@ def classify_audio():
     output_dir = None
     normalized_path = None
     try:
+        from birdnet_analyzer.analyze.core import analyze as birdnet_analyze
+
         if 'file' not in request.files:
             return jsonify({'error': 'No file provided'}), 400
 
