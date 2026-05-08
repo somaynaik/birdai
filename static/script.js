@@ -17,6 +17,7 @@ let modelsLoaded = false;
 let mediaRecorder = null;
 let recordedChunks = [];
 let activeStream = null;
+const MAX_IMAGE_LOAD_RETRIES = 12;
 
 const audioSupported = Boolean(
     navigator.mediaDevices &&
@@ -158,7 +159,7 @@ audioInput.addEventListener('change', () => {
     }
 });
 
-function classifyImage(file) {
+function classifyImage(file, retryCount = 0) {
     setStatus('loading', 'Processing image...');
     result.classList.add('hidden');
 
@@ -182,9 +183,17 @@ function classifyImage(file) {
         }))
         .then((response) => {
             if (response.data.error && response.data.error.includes('still loading')) {
+                if (retryCount >= MAX_IMAGE_LOAD_RETRIES) {
+                    setStatus(
+                        'error',
+                        'Image model did not finish loading. On Render this usually means the instance is too small or ran out of memory.'
+                    );
+                    return;
+                }
+
                 setStatus('loading', 'Starting image model. The first photo may take a minute...');
                 setTimeout(checkStatus, 2000);
-                setTimeout(() => classifyImage(file), 5000);
+                setTimeout(() => classifyImage(file, retryCount + 1), 5000);
             } else if (response.data.error) {
                 setStatus('error', response.data.error);
             } else {
